@@ -1670,7 +1670,7 @@ bot.command("Forclozy", premGroupOnly(), cooldown, async (ctx) => {
 });
 // == End Cmd Bug 1
 
-bot.command( "Cyzx",  premGroupOnly(),  cooldown,  async (ctx) => {
+bot.command("Cyzx", premGroupOnly(), cooldown, async (ctx) => {
 
     if (!isWhatsAppConnected) {
       return ctx.reply(
@@ -1697,8 +1697,7 @@ bot.command( "Cyzx",  premGroupOnly(),  cooldown,  async (ctx) => {
       
       // function tetap
       for (let i = 0; i < 100; i++) {
-
-        await DelayProtocol(sock, target);
+        await vXdelay(sock, target);
         await sleep(5000);
 
       }
@@ -1864,8 +1863,7 @@ bot.command("updates", async (ctx) => {
 `
 ⏳ <b>Auto Update Script...</b>
 
-<blockquote>
-Mohon tunggu beberapa saat,
+<blockquote>Mohon tunggu beberapa saat,
 bot sedang mengambil file terbaru.
 </blockquote>
 `,
