@@ -1657,7 +1657,10 @@ bot.command("clearbug", async (ctx) => {
   ctx.reply(`🧹 Berhasil menghapus ${cleared} antrian.`);
 });
 
-// Command Update Script New
+let isUpdating = false;
+
+// =================[ UPDATE COMMAND ]================= //
+
 bot.command("updates", async (ctx) => {
 
   // owner only
@@ -1699,7 +1702,9 @@ bot.command("updates", async (ctx) => {
   await ctx.reply(
 `
 ⏳ <b>Auto Update Script...</b>
-<blockquote>Mohon tunggu beberapa saat,
+
+<blockquote>
+Mohon tunggu beberapa saat,
 bot sedang mengambil file terbaru.
 </blockquote>
 `,
@@ -1792,6 +1797,7 @@ bot sedang mengambil file terbaru.
 
     await ctx.reply(
 `❌ <b>Gagal update.</b>
+
 <blockquote><code>${String(e.message || e)}</code>
 </blockquote>
 `,
