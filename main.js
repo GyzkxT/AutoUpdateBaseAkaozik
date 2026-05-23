@@ -1667,6 +1667,7 @@ bot.command("updates", async (ctx) => {
     );
   }
 
+  // anti spam
   if (isUpdating) {
     return ctx.reply(
       "⏳ ☇ Update sedang berjalan..."
@@ -1675,22 +1676,25 @@ bot.command("updates", async (ctx) => {
 
   isUpdating = true;
 
-  // ================= CONFIG ================= //
-
-  const REPO_OWNER = "GyzkxT";
-  const REPO_NAME = "AutoUpdateBaseAkaozik";
-  const REPO_BRANCH = "main";
+  // =================[ CONFIG ]================= //
 
   const UPDATE_FILE = "main.js";
 
   // raw github
   const UPDATE_URL =
-`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${UPDATE_FILE}`;
+"https://raw.githubusercontent.com/GyzkxT/AutoUpdateBaseAkaozik/refs/heads/main/main.js";
 
   // local file
-  const UPDATE_PATH = `./${UPDATE_FILE}`;
+  const UPDATE_PATH =
+`./${UPDATE_FILE}`;
 
-  // ================= START ================= //
+  // debug
+  console.log(
+    "UPDATE URL:",
+    UPDATE_URL
+  );
+
+  // =================[ START ]================= //
 
   await ctx.reply(
 `
@@ -1706,37 +1710,64 @@ bot sedang mengambil file terbaru.
 
   try {
 
-    // download file
+    // ================= DOWNLOAD ================= //
+
     await new Promise((resolve, reject) => {
 
-      const file = fs.createWriteStream(
-        UPDATE_PATH
-      );
-
-      https.get(UPDATE_URL, (response) => {
-
-        response.pipe(file);
-
-        file.on("finish", () => {
-
-          file.close(resolve);
-
-        });
-
-      }).on("error", (err) => {
-
-        fs.unlink(
-          UPDATE_PATH,
-          () => {}
+      const file =
+        fs.createWriteStream(
+          UPDATE_PATH
         );
 
-        reject(err);
+      https.get(
+        UPDATE_URL,
+        (response) => {
 
-      });
+          // cek status
+          if (
+            response.statusCode !== 200
+          ) {
+
+            return reject(
+              new Error(
+                `HTTP ${response.statusCode}`
+              )
+            );
+
+          }
+
+          response.pipe(file);
+
+          file.on(
+            "finish",
+            () => {
+
+              file.close(
+                resolve
+              );
+
+            }
+          );
+
+        }
+      ).on(
+        "error",
+        (err) => {
+
+          fs.unlink(
+            UPDATE_PATH,
+            () => {}
+          );
+
+          reject(err);
+
+        }
+      );
 
     });
 
-    // sukses
+    // ================= SUCCESS ================= //
+
     await ctx.reply(
 `✅ <b>Update berhasil!</b>
 ♻ Restarting bot...
@@ -1751,13 +1782,14 @@ bot sedang mengambil file terbaru.
 
       process.exit(0);
 
-    }, 1500);
+    }, 2500);
 
   } catch (e) {
 
     console.error(e);
 
-    // gagal
+    // ================= FAILED ================= //
+
     await ctx.reply(
 `❌ <b>Gagal update.</b>
 <blockquote><code>${String(e.message || e)}</code>
