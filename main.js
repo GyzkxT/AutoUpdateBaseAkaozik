@@ -1221,7 +1221,6 @@ bot.start(async (ctx) => {
 ⎔ Type : ɓεɓαร รραɱ
 ⎔ Status : Active
 </blockquote>
-
 <blockquote>Use it wisely and responsibly, remember karma is real and there's always someone better than you.
 </blockquote>
 ⵢ Tap button below to continue →`;
@@ -1263,7 +1262,6 @@ bot.action("/start", async (ctx) => {
 ⎔ Type : ɓεɓαร รραɱ
 ⎔ Status : Active
 </blockquote>
-
 <blockquote>Use it wisely and responsibly, remember karma is real and there's always someone better than you.
 </blockquote>
 ⵢ Tap button below to continue →`;
