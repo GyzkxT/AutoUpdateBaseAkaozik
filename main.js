@@ -4219,154 +4219,63 @@ bot.command("listbot", checkOwner, async (ctx) => {
 
 });
 
-bot.command("pullupdate", async (ctx) => {
+let isUpdating = false; 
 
-  // owner only
-  if (ctx.from.id != config.ID_TELEGRAM) {
-    return ctx.reply(
-      "❌ ☇ Akses hanya untuk pemilik"
-    );
+bot.command("pullupdate", async (ctx) => {
+  if (!isOwner(ctx.from.id)) {
+    return ctx.reply("❌ Akses hanya untuk pemilik");
   }
 
-  // anti spam
+  // Anti spam update
   if (isUpdating) {
-    return ctx.reply(
-      "⏳ ☇ Update sedang berjalan..."
-    );
+    return ctx.reply("⏳ Update sedang berjalan...");
   }
 
   isUpdating = true;
 
-  // =================[ CONFIG ]================= //
-
   const UPDATE_FILE = "main.js";
-
-  // raw github
-  const UPDATE_URL =
-"https://raw.githubusercontent.com/GyzkxT/AutoUpdateBaseAkaozik/refs/heads/main/main.js";
-
-  // local file
-  const UPDATE_PATH =
-`./${UPDATE_FILE}`;
-
-  // debug
-  console.log(
-    "UPDATE URL:",
-    UPDATE_URL
-  );
-
-  // =================[ START ]================= //
+  const UPDATE_URL = "https://raw.githubusercontent.com/GyzkxT/AutoUpdateBaseAkaozik/refs/heads/main/main.js";
+  const UPDATE_PATH = `./${UPDATE_FILE}`;
 
   await ctx.reply(
-`
-⏳ <b>Auto Update Script...</b>
-<blockquote>Mohon tunggu beberapa saat,
-bot sedang mengambil file terbaru.</blockquote>
-`,
-    {
-      parse_mode: "HTML"
-    }
+    `⏳ <b>Auto Update Script...</b>\n<blockquote>Mohon tunggu beberapa saat, bot sedang mengambil file terbaru.</blockquote>`,
+    { parse_mode: "HTML" }
   );
 
   try {
-
-    // ================= DOWNLOAD ================= //
-
     await new Promise((resolve, reject) => {
-
-      const file =
-        fs.createWriteStream(
-          UPDATE_PATH
-        );
-
-      https.get(
-        UPDATE_URL,
-        (response) => {
-
-          // cek status
-          if (
-            response.statusCode !== 200
-          ) {
-
-            return reject(
-              new Error(
-                `HTTP ${response.statusCode}`
-              )
-            );
-
-          }
-
-          response.pipe(file);
-
-          file.on(
-            "finish",
-            () => {
-
-              file.close(
-                resolve
-              );
-
-            }
-          );
-
+      const file = fs.createWriteStream(UPDATE_PATH);
+      https.get(UPDATE_URL, (response) => {
+        if (response.statusCode !== 200) {
+          return reject(new Error(`HTTP ${response.statusCode}`));
         }
-      ).on(
-        "error",
-        (err) => {
-
-          fs.unlink(
-            UPDATE_PATH,
-            () => {}
-          );
-
-          reject(err);
-
-        }
-      );
-
+        response.pipe(file);
+        file.on("finish", () => {
+          file.close(resolve);
+        });
+      }).on("error", (err) => {
+        fs.unlink(UPDATE_PATH, () => {});
+        reject(err);
+      });
     });
 
-    // ================= SUCCESS ================= //
-
     await ctx.reply(
-`✅ <b>Update berhasil!</b>
-🧩 Ditemukan file <b>main.js</b>
-♻ Restarting bot...
-`,
-      {
-        parse_mode: "HTML"
-      }
+      `✅ <b>Update berhasil!</b>\n🧩 Ditemukan file <b>main.js</b>\n♻ Restarting bot...`,
+      { parse_mode: "HTML" }
     );
 
-    // restart bot
     setTimeout(() => {
-
       process.exit(0);
-
     }, 2500);
-
   } catch (e) {
-
     console.error(e);
-
-    // ================= FAILED ================= //
-
     await ctx.reply(
-`❌ <b>Gagal update.</b>
-<blockquote><code>${String(e.message || e)}</code>
-</blockquote>
-`,
-      {
-        parse_mode: "HTML"
-      }
+      `❌ <b>Gagal update.</b>\n<blockquote><code>${String(e.message || e)}</code></blockquote>`,
+      { parse_mode: "HTML" }
     );
-
   } finally {
-
     isUpdating = false;
-
   }
-
 });
 
 // ================= KILL SESSION ================= //
